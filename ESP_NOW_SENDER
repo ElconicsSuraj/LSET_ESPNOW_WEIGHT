@@ -1,0 +1,47 @@
+
+#include "HX711.h" 
+
+
+#define LOADCELL_DOUT_PIN  5
+
+#define LOADCELL_SCK_PIN  4
+#define vcc 2
+HX711 scale;
+float weight();
+float calibration_factor =  638;      // For 3 kg 638; //351 for 5kg / 1755 for 1 kg worked for my 440lb max scale setup
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(vcc,OUTPUT);
+  digitalWrite(vcc,HIGH);
+   //SerialBT.begin(" Wright machine 1"); //Bluetooth device name
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  scale.set_scale();
+  scale.tare();  //Reset the scale to 0
+
+  long zero_factor = scale.read_average(); //Get a baseline reading
+  Serial.print("Zero factor: "); //This can be used to remove the need to tare the scale. Useful in permanent scale projects.
+  Serial.println(zero_factor);
+  pinMode(15,INPUT);
+}
+
+void loop() {
+    digitalWrite(vcc,HIGH);
+
+Serial.print(weight());
+
+}
+
+
+float weight() {
+  scale.set_scale(calibration_factor); // Adjust to this calibration factor
+  delay(3000);
+  float weight = scale.get_units(20); // Get the weight reading
+  // Serial.print("Reading: ");
+  // Serial.print(weight, 1);
+  // Serial.print("Gram \t\n"); // Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
+  // Serial.flush();
+  delay(1000);
+  return weight; // Return the weight reading
+}
+// Funcationaly of adding Tare Button
